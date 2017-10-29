@@ -1,0 +1,58 @@
+----------------------------- BLE Beacon PDU -----------------------------
+
+LSB      		Link Layer packet format for the LE Uncoded PHYs (Figure 2.1)		      MSB
+ ____________________________________________________________________________________________
+| Preamble (1 or 2 octets) | Access Address (4 octets) | PDU (2-257 octets) | CRC (3 octets) |
+ ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+
+Preamble: 10101010 (0xAA)
+
+Access Address: 0x8E89BED6
+
+/******** Advertising Channel PDU ********/
+
+LSB                             Advertising channel PDU header                                  MSB
+ ___________________________________________________________________________________________________
+| PDU type (4 bits) | RFU (1 bit) | ChSel (1 bit) | TxAdd (1 bit) | RxAdd (1 bit) | Length (8 bits) |
+ ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+
+PDU Type: 0x2
+PDU Name: ADV_NONCONN_IND
+Channel: Primary advertising
+Permitted PHYs: LE 1M
+
+RFU: Reserved for Future Use
+
+ChSel: Not used (RFU)
+
+TxAdd: 0 (public)
+
+RxAdd: Not used (RFU)
+
+Length: 0x1C (28 bytes)
+Length of PDU payload
+
+/******************** AltBeacon Advertisement for PDU Payload ********************/
+
+LSB                                                              AltBeacon Advertisment                                                      MSB
+ ________________________________________________________________________________________________________________________________________________
+| AD Length (1 byte) | AD Type (1 byte) | MFG ID (2 byte) | Beacon Code (2 bytes) | Beacon ID (20 bytes) | Ref RSSI (1 byte) | MFG RSVD (1 byte) |
+ ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+
+AD Length: 0x1B (27 bytes)
+
+AD Type: 0xFF (Custom beacon type)
+
+MFG ID: The little endian representation of the beacon device manufacturer's company code as maintained by the Bluetooth SIG assigned numbers database
+Beacon Code: 0xBEAC
+
+Beacon ID: The big endian representation of the beacon identifier. For interoperability purposes, the first 16+ bytes of the beacon identifier should be unique to the advertiser's organizational unit. Any remaining bytes of the beacon identifier may be subdivided as needed for the use case.
+
+Ref RSSI: A 1-byte value representing the average received signal strength at 1m from the advertiser. A signed 1-byte value from 0 to -127.
+
+MFG RSVD: A 1-byte value from 0x00 to 0xFF. Interpretation of this value is to be defined by the manufacturer and is to be evaluated based on the MFG ID value.
+
+
+
+0xAA8E89BED6200001C1BFFBEAC (Beacon ID) (Ref RSSI) (MFG RSVD)
+

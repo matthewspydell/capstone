@@ -1,0 +1,206 @@
+----------------------------- Vol. 6 Part B -----------------------------
+
+The following packet format is defined for the LE Uncoded PHYs (LE 1M and LE 2M) and is used for both advertising channel packets and data channel packets.
+This packet format is shown in Figure 2.1. Each packet consists of four mandatory fields. The mandatory fields are Preamble, Access Address, PDU, and CRC.
+
+
+LSB      		Link Layer packet format for the LE Uncoded PHYs (Figure 2.1)		      MSB
+ ____________________________________________________________________________________________
+| Preamble (1 or 2 octets) | Access Address (4 octets) | PDU (2-257 octets) | CRC (3 octets) |
+ ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+
+ 									Transmission Duration
+ 				|	Preamble   |   Address    |  CI |   Term1    |    PDU    |  CRC  |  Term2
+----------------|--------------|--------------|-----|------------|-----------|-------|---------
+# of bits		|   uncoded    |     32       |  2  |     3      |  16-2056  |  24   |    3
+----------------|--------------|--------------|-----|------------|-----------|-------|---------
+Duration when   |              |              |     |            |           |       |
+using S=8 coding|     80       |     256      |  16 |     24     | 128-16448 |  192  |   24
+(us)            |              |              |     |            |           |       |
+----------------|--------------|--------------|-----|------------|-----------|-------|---------
+Duration when   |              |              |     |            |           |       |
+using S=2 coding|     80       |     256      |  16 |     24     |  32-4112  |  48   |   6
+(us)            |              |              |     |            |           |       |
+
+/******************** Preamble ********************/
+All Link Layer packets have a preamble which is used in the receiver to perform frequency synchronization, symbol timing estimation, and Automatic Gain Control (AGC) training. The preamble is a fixed sequence of alternating 0 and 1 bits. For packets transmitted on the LE 1M PHY, the preamble is 8 bits; for packets transmitted on the LE 2M PHY, the preamble is 16 bits. The first bit of the preamble (in transmission order) shall be the same as the LSB of the Access Address.
+
+		    Access					Access
+preamble    address     preamble    address
+ _________________       _________________
+| 10101010 | 1... |     | 01010101 | 0... |
+ ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾       ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+ 			Preamble for LE 1M packets
+
+/******************** Access Address ********************/
+The AUX_SYNC_IND PDU, and any AUX_CHAIN_IND PDUs connected to it, shall use the Access Address (AA) value set in the SyncInfo field (see Section 2.3.4.6) contained in the AUX_ADV_IND PDU that describes the periodic advertising.
+
+The Access Address for all other advertising channel packets shall be 10001110100010011011111011010110b (0x8E89BED6).
+
+It is intended that each Link Layer connection between any two devices and each periodic advertisement has a different Access Address.
+
+The Link Layer in the Initiating State shall generate a new Access Address for each initiating PDU it sends (see Section 2.3.3.1). The Link Layer in the Advertising State shall generate a new Access Address each time that it enables periodic advertising on an advertising set. The address is sent in the SyncInfo field (see Section 2.3.4.6) of PDUs referring to that periodic advertising.
+
+The Access Address shall be a 32-bit value. Each time it needs a new Access Address, the Link Layer shall generate a new random value that meets the following requirements:
+• It shall not be the Access Address for any existing Link Layer connection on this device.
+• It shall not be the Access Address for any enabled periodic advertising.
+• It shall have no more than six consecutive zeros or ones.
+• It shall not be the advertising channel packets’ Access Address.
+• It shall not be a sequence that differs from the advertising channel packets’ Access Address by only one bit.
+• It shall not have all four octets equal.
+• It shall have no more than 24 transitions.
+• It shall have a minimum of two transitions in the most significant six bits.
+
+The seed for the random number generator shall be from a physical source of entropy and should have at least 20 bits of entropy.
+If the random number does not meet the above requirements, new random numbers shall be generated until the requirements are met.
+On an implementation that also supports the LE Coded PHY (see Section 2.2, the Access Address shall also meet the following requirements:
+• It shall have at least three ones in the least significant 8 bits.
+• It shall have no more than eleven transitions in the least significant 16 bits.
+
+/******************** PDU ********************/
+The preamble and Access Address are followed by a PDU. When a packet is transmitted on either the primary or secondary advertising channel, the PDU shall be the Advertising Channel PDU as defined in Section 2.3. When a packet is transmitted on the data physical channel, the PDU shall be the Data Channel PDU as defined in Section 2.4.
+
+/******************** CRC ********************/
+At the end of every Link Layer packet there is a 24-bit CRC. It shall be calculated over the PDU. The CRC polynomial is defined in Section 3.1.1.
+
+PDU consists of up to 5 components
+
+1. Where the PDU is used (optional)
+2. When the PDU is used (mandatory)
+3. What the PDU does (optional but usually present)
+4. Version (optional)
+5. How the PDU is used (mandatory)
+
+/************ Where (optional) ************/
+What physical channel the PDU is used on.
+
+none = PDU is used on the primary advertising channel or any non-advertising channel
+AUX = PDU is used on the secondary advertising channel
+
+/************ When (mandatory) ************/
+Which kind of Link Layer procedure makes use of the PDU.
+
+ADV = Normal advertising
+SYNC = Periodic advertising
+SCAN = Scanning
+CONNECT = Connecting
+CHAIN = Fragmented data
+LL = Data link layer
+DATA = Reliable data
+
+/************ What (optional but usually present) ************/
+Distinguishes different PDUs that are found in the same context. While it is normally present, it is sometimes omitted where there is a "default" or "usual" case. This component may contain more than one word separated by underlines.
+
+none = various
+DIRECT = Connectable directed
+NONCONN = Non-connectable and non-scannable undirected
+SCAN = Scannable undirected
+
+/************ Version (optional) ************/
+Distinguishes between PDUs with the same purpose but different contents (usually because the original PDU was found to be insufficient to handle new features).
+
+none = Original version of the PDU
+EXT = Extended version of the PDU
+
+/************ How (mandatory) ************/
+Indicates how the PDU fits into a procedure.
+
+IND = An indication that doesn’t expect a reply
+REQ = A request that expects a response
+RSP = A response to a request
+
+/************ Example ************/
+AUX_SYNC_IND is a PDU used for synchronous advertising on the secondary advertising channel that does not expect a response.
+
+--------------------------------------------------------------------------------------------------------------------
+
+LSB      Advertising channel PDU      MSB
+ ___________________________________________
+| Header (16 bits) | Payload (1-255 octets) |
+ ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+LSB                             Advertising channel PDU header                                  MSB
+ ___________________________________________________________________________________________________
+| PDU type (4 bits) | RFU (1 bit) | ChSel (1 bit) | TxAdd (1 bit) | RxAdd (1 bit) | Length (8 bits) |
+ ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+PDU Type
+0000b - ADV_IND - Primary Advertising
+ 
+0001b - ADV_DIRECT_IND - Primary Advertising
+ 
+0010b - ADV_NONCONN_IND - Primary Advertising
+ 
+0011b - SCAN_REQ - Primary Advertising
+		AUX_SCAN_REQ - Secondary Advertising
+
+0100b - SCAN_RSP - Primary Advertising
+ 
+0101b - CONNECT_IND - Primary Advertising
+		AUX_CONNECT_REQ - Secondary Advertising
+
+0110b - ADV_SCAN_IND - Primary Advertising
+
+0111b - ADV_EXT_IND - Primary Advertising
+		AUX_ADV_IND - Secondary Advertising
+		AUX_SCAN_RSP - Secondary Advertising
+		AUX_SYNC_IND - Secondary Advertising
+		AUX_CHAIN_IND - Secondary Advertising
+
+1000b - AUX_CONNECT_RSP - Secondary Advertising
+
+All other values - Reserved for Future Use
+
+
+Advertising PDUs
+The following advertising channel PDU Types are called advertising PDUs:
+• ADV_IND
+• ADV_DIRECT_IND
+• ADV_NONCONN_IND
+• ADV_SCAN_IND
+• ADV_EXT_IND
+• AUX_ADV_IND
+• AUX_SYNC_IND
+• AUX_CHAIN_IND
+These PDUs are sent by the Link Layer in the Advertising State and received by a Link Layer in the Scanning State or Initiating State. The ADV_IND, ADV_DIRECT_IND, ADV_NONCONN_IND, and ADV_SCAN_IND PDUs are called “legacy advertising PDUs”. The ADV_EXT_IND, AUX_ADV_IND, AUX_SYNC_IND, and AUX_CHAIN_IND PDUs are called “extended advertising PDUs”. Advertising events using legacy advertising PDUs are called “legacy advertising events”.
+
+The ADV_NONCONN_IND PDU has the Payload as shown in Figure 2.8. The PDU shall be used in non-connectable and non-scannable undirected advertising events. The TxAdd in the advertising channel PDU header indicates whether the advertiser’s address in the AdvA field is public (TxAdd = 0) or random (TxAdd = 1).
+
+			Payload (Figure 2.8)
+ _________________________________________
+| AdvA (6 octets) | AdvData (0-31 octets) |
+ ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+The Payload field consists of AdvA and AdvData fields. The AdvA field shall contain the advertiser’s public or random device address as indicated by TxAdd. The AdvData field may contain Advertising Data from the advertiser’s Host.
+
+
+Scanning PDUs
+The following advertising channel PDU types are called scanning PDUs.
+• SCAN_REQ
+• SCAN_RSP
+• AUX_SCAN_REQ
+• AUX_SCAN_RSP
+The SCAN_REQ and AUX_SCAN_REQ PDUs are called scan request PDUs. The SCAN_RSP and AUX_SCAN_RSP PDUs are called scan response PDUs.
+Where these PDUs are used to reply to a scannable advertisement, the PHY used for them shall be the same as the PHY used for the PDU that they reply to.
+
+The SCAN_REQ and AUX_SCAN_REQ PDUs have the Payload as shown in
+Figure 2.10. The TxAdd in the advertising channel PDU header indicates whether the scanner’s address in the ScanA field is public (TxAdd = 0) or random (TxAdd = 1). The RxAdd in the advertising channel PDU header indicates whether the advertiser’s address in the AdvA field is public (RxAdd = 0) or random (RxAdd = 1).
+
+		Payload (Figure 2.10)
+ ____________________________________
+| ScanA (6 octets) | AdvA (6 octets) |
+ ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+The Payload field consists of ScanA and AdvA fields. The ScanA field shall contain the scanner’s public or random device address as indicated by TxAdd. The AdvA field is the address of the device to which this PDU is addressed.
+The AdvA field shall contain the advertiser’s public or random device address as indicated by RxAdd.
+Note: These PDUs do not contain any Host Data.
+
+
+When present, the AdvA field is six octets with the format shown in Figure 2.16.
+
+		AdvA (Figure 2.16)
+ ________________________________
+| Adveritsing Address (6 octets) |
+ ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+
+
+
+
+
+
