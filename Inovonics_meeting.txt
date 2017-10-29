@@ -1,0 +1,10 @@
+09/06/2017
+
+-Explore new communication systems (BLE, RFID, or something else) for location services
+-Cost-benefit analysis of different technologies first
+-Decision matrix for evaluation (factors in columns, size, power, operational distance, etc.)
+-Main project is evaluating major technologies, not building a funcitoning system
+-Distinguishing between floors is difficult
+-Beacon, time-of-flight, signal strength, triatelation, more?
+
+CERN's white rabbit project
