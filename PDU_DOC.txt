@@ -9,10 +9,10 @@ LSB      		Link Layer packet format for the LE Uncoded PHYs (Figure 2.1)		      
 | Preamble (1 or 2 octets) | Access Address (4 octets) | PDU (2-257 octets) | CRC (3 octets) |
  ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 
- 									Transmission Duration
- 				|	Preamble   |   Address    |  CI |   Term1    |    PDU    |  CRC  |  Term2
+ 					Transmission Duration
+ 		|   Preamble   |   Address    |  CI |   Term1    |    PDU    |  CRC  |  Term2
 ----------------|--------------|--------------|-----|------------|-----------|-------|---------
-# of bits		|   uncoded    |     32       |  2  |     3      |  16-2056  |  24   |    3
+# of bits	|   uncoded    |     32       |  2  |     3      |  16-2056  |  24   |    3
 ----------------|--------------|--------------|-----|------------|-----------|-------|---------
 Duration when   |              |              |     |            |           |       |
 using S=8 coding|     80       |     256      |  16 |     24     | 128-16448 |  192  |   24
