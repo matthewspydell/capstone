@@ -1,0 +1,1 @@
+<https://github.com/linuxxunil/ibeacon/blob/master/ibeacon.c#L78>
